@@ -1,0 +1,47 @@
+html
+  head
+    title!='Coffee Table | CMS'
+  body
+    h1='Coffee Table | Content Management System'
+    form(action="signin" method="post")
+      h2='Have an account? Sign in!'
+      label(for="username") Username
+      input(type="text" name="username" title="Enter between 3 and 32 alphanumerical characters" pattern="^[a-zA-Z0-9]{3,32}$" required)
+      br
+
+      label(for="password") Password
+      input(type="password" name="password" title="Enter 8 - 128 alphanumerical or special characters" pattern="^[a-zA-Z0-9\!\#\£\$\%\&\*\^\(\)\-\_\+\=\{\[\]\@\'\}\:\<\>\,\?\.\/\\\\]{8,128}$" required)
+      br
+
+      input(type="submit" value="Sign in")
+
+    form(action="signup" method="get")
+      label(for="username") Username
+      input(type="text" name="username" title="Enter between 3 and 32 alphanumerical characters" pattern="^[a-zA-Z0-9]{3,32}$" required)
+      br
+
+      label(for="email") Email:
+      input(type="email" name="email")
+      br
+
+      label(for="forename") Forename:
+      input(type="text" name="forename")
+      br
+
+      label(for="surname") Surname:
+      input(type="text" name="surname")
+      br
+
+      div
+        p='Enter a password between 8 - 128 characters long.'
+        p='Must contain uppercase, lowercase, numerical and special characters.'
+
+      label(for="password") Password
+      input(type="password" name="password" title="Enter 8 - 128 alphanumerical or special characters" pattern="^[a-zA-Z0-9\!\#\£\$\%\&\*\^\(\)\-\_\+\=\{\[\]\@\'\}\:\<\>\,\?\.\/\\\\]{8,128}$" required)
+      br
+
+      label(for="conf_password") Confirm Password:
+      input(type="password" name="conf_password")
+      br
+
+      input(type="submit" value="Sign in")
