@@ -1,7 +1,10 @@
 const dao = require('../model/UserDAO.js');
 
 
-///^[a-zA-Z0-9]{3,32}$/;
+//Username must have following structure: ^[a-zA-Z0-9]{3,32}$/;
+test('Checks username with length of 0', () => {
+  expect(dao.validateUsername("")).toBe(false);
+});
 
 //Character only tests
 test('Checks username with length of 1 with characters only', () => {

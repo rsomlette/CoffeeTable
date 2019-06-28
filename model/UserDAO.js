@@ -59,7 +59,7 @@ function validateUsername(username){
 }
 
 function validatePassword(password){
-  var passRegEx = /^[a-zA-Z0-9\!\#\£\$\%\&\*\^\(\)\-\_\+\=\{\[\]\@\'\}\:\<\>\,\?\.\/\\\\]{8,128}$/;
+  var passRegEx = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_])\S{8,128}$/;
   if(passRegEx.test(password)){
     return true;
   }
@@ -78,7 +78,7 @@ function confirmPassword(password, confirmPassword){
 }
 
 function validateForename(forename){
-  var forenameRegEx = /^[a-zA-Z]{3,32}$/
+  var forenameRegEx = /^[a-zA-Z]{2,32}$/
   if(forenameRegEx.test(forename)){
     return true;
   }
@@ -88,7 +88,7 @@ function validateForename(forename){
 }
 
 function validateSurname(surname){
-  var surnameRegEx = /[a-zA-Z ]{2,64}$/;
+  var surnameRegEx = /^[a-zA-Z ]{2,64}$/;
   if(surnameRegEx.test(surname)){
     return true;
   }
