@@ -4,17 +4,19 @@
   "description": "A lightweight CMS",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "JRIngram",
   "license": "ISC",
   "devDependencies": {
     "express": "^4.17.1",
-    "jade": "^1.11.0"
+    "jade": "^1.11.0",
+    "jest": "^24.8.0"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "email-validator": "^2.0.4",
-    "mysql": "^2.17.1"
+    "mysql": "^2.17.1",
+    "whatwg-url": "^7.0.0"
   }
 }

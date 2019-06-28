@@ -15,7 +15,7 @@ html
 
       input(type="submit" value="Sign in")
 
-    form(action="signup" method="get")
+    form(action="signup" method="post")
       label(for="username") Username
       input(type="text" name="username" title="Enter between 3 and 32 alphanumerical characters" pattern="^[a-zA-Z0-9]{3,32}$" required)
       br
@@ -40,8 +40,8 @@ html
       input(type="password" name="password" title="Enter 8 - 128 alphanumerical or special characters" pattern="^[a-zA-Z0-9\!\#\£\$\%\&\*\^\(\)\-\_\+\=\{\[\]\@\'\}\:\<\>\,\?\.\/\\\\]{8,128}$" required)
       br
 
-      label(for="conf_password") Confirm Password:
-      input(type="password" name="conf_password")
+      label(for="confirmPassword") Confirm Password:
+      input(type="password" name="confirmPassword")
       br
 
       input(type="submit" value="Sign in")

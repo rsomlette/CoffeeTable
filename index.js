@@ -1,9 +1,8 @@
-const db = require('./connection.js');
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
-const port = 8081;
-const uc = require('./controllers/usercontroller.js')
+const port = 8080;
+const uc = require('./controllers/usercontroller.js');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -16,12 +15,8 @@ app.get('/', function(req, res){
 
 app.route('/signup').post(function(req,res){
   var date = new Date();
-  console.log("Sign up at " + date);
-  var username = req.body.username;
-  console.log(username);
-  var signupstring = uc.signup(req.body.username, req.body.password, req.body.conf_password, req.body.forename, req.body.surname, req.body.email);
-  res.send(signupstring);
-
+  console.log("Sign is: " + uc.signup(req.body.username, req.body.password, req.body.conf_password, req.body.forename, req.body.surname, req.body.email));
+  res.send("completed");
 });
 
 app.route('/signin').post(function(req,res){
