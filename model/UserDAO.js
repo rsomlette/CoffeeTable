@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-var validator = require("email-validator");
+const validator = require("email-validator");
 
 module.exports = {
   validateSignUp,
@@ -8,14 +8,16 @@ module.exports = {
   confirmPassword,
   validateForename,
   validateSurname,
-  signUp
+  signUp,
+  deleteUser
 };
 
 function connect(){
   /**
   * Manages the connection to the database
   */
-  var con = mysql.createConnection({
+  let con = mysql.createConnection({
+    //Obviously change these details when deploying!
     host: "localhost",
     user: "jringram",
     password: "coffeetable",
@@ -24,7 +26,7 @@ function connect(){
 
   con.connect(function(err) {
     if (err) throw err;
-    console.log("Connected to coffee_table!");
+    else console.log("Connected to coffee_table!");
   });
 
   return con;
@@ -49,7 +51,7 @@ function validateSignUp(username, password, conf_password, forename, surname, em
 }
 
 function validateUsername(username){
-  var usernameRegEx = /^[a-zA-Z0-9]{3,32}$/;
+  let usernameRegEx = /^[a-zA-Z0-9]{3,32}$/;
   if(usernameRegEx.test(username)){
     return true;
   }
@@ -59,7 +61,7 @@ function validateUsername(username){
 }
 
 function validatePassword(password){
-  var passRegEx = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_])\S{8,128}$/;
+  let passRegEx = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_])\S{8,128}$/;
   if(passRegEx.test(password)){
     return true;
   }
@@ -78,7 +80,7 @@ function confirmPassword(password, confirmPassword){
 }
 
 function validateForename(forename){
-  var forenameRegEx = /^[a-zA-Z]{2,32}$/
+  let forenameRegEx = /^[a-zA-Z]{2,32}$/
   if(forenameRegEx.test(forename)){
     return true;
   }
@@ -88,7 +90,7 @@ function validateForename(forename){
 }
 
 function validateSurname(surname){
-  var surnameRegEx = /^[a-zA-Z ]{2,64}$/;
+  let surnameRegEx = /^[a-zA-Z ]{2,64}$/;
   if(surnameRegEx.test(surname)){
     return true;
   }
@@ -97,29 +99,62 @@ function validateSurname(surname){
   }
 }
 
-function signUp(username, password, confirmPassword, forename, surname, email){
-  if(validateSignUp(username, password, confirmPassword, forename, surname, email)){
-    var con = connect();
-    var sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + password + "','" + email + "','" + forename + "','" + surname + "', 'test')";
+async function signUp(username, password, confirmPassword, forename, surname, email){
+  let success = new Promise(function(resolve, reject){
+    if(validateSignUp(username, password, confirmPassword, forename, surname, email)){
+      let con = connect();
+      let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + password + "','" + email + "','" + forename + "','" + surname + "', 'test')";
 
+      con.query(sql, function (err, result) {
+        if (err){
+          throw err;
+          con.destroy();
+          reject(false);
+        }
+        try{
+          console.log("[" + new Date() + "] " + sql + ". SUCCESS");
+          con.destroy();
+          resolve(true);
+        }
+        catch(error){
+          console.error(error);
+          console.log("[" + new Date() + "] " + sql + ". FAILED");
+          con.destroy();
+          reject(false);
+        }
+      });
+    }
+    else{
+      console.log("Not Validated!");
+      con.destroy();
+      reject(false);
+    }
+  });
+  return success;
+}
+
+async function deleteUser(username){
+  let success = new Promise(function (resolve, reject){
+    let con = connect();
+    let sql = "DELETE FROM users WHERE username =\"" + username + "\"";
     con.query(sql, function (err, result) {
       if (err){
         throw err;
+        con.destroy();
+        reject(false);
       }
       try{
-        var date = new Date();
-        console.log("[" + date + "] " + sql + ". SUCCESS");
-        return true;
+        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
+        con.destroy();
+        resolve(true);
       }
       catch(error){
         console.error(error);
-        var date = new Date();
-        console.log("[" + date + "] " + sql + ". FAILED");
-        return false;
+        console.log("[" + new Date() + "] " + sql + ". FAILED");
+        con.destroy();
+        reject(false);
       }
     });
-  }
-  else{
-    return false;
-  }
+  });
+  return success;
 }

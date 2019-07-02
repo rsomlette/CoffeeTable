@@ -4,7 +4,12 @@
   "description": "A lightweight CMS",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "coverage": "jest --coverage",
+    "init": "jest --init",
+    "openHandles": "jest --detectOpenHandles",
+    "test": "jest",
+    "verboseTest": "jest --verbose --coverage"
+
   },
   "author": "JRIngram",
   "license": "ISC",
