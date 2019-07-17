@@ -16,6 +16,7 @@ html
       input(type="submit" value="Sign in")
 
     form(action="signup" method="post")
+      h2='Don\'t have an account? Make one!'
       label(for="username") Username
       input(type="text" name="username" title="Enter between 3 and 32 alphanumerical characters" pattern="^[a-zA-Z0-9]{3,32}$" required)
       br

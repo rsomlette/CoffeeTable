@@ -9,6 +9,7 @@ module.exports = {
   validateForename,
   validateSurname,
   signUp,
+  signIn,
   deleteUser
 };
 
@@ -106,11 +107,6 @@ async function signUp(username, password, confirmPassword, forename, surname, em
       let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + password + "','" + email + "','" + forename + "','" + surname + "', 'test')";
 
       con.query(sql, function (err, result) {
-        if (err){
-          throw err;
-          con.destroy();
-          reject(false);
-        }
         try{
           console.log("[" + new Date() + "] " + sql + ". SUCCESS");
           con.destroy();
@@ -133,16 +129,43 @@ async function signUp(username, password, confirmPassword, forename, surname, em
   return success;
 }
 
+async function signIn(username, password){
+  let success = new Promise(function (resolve, reject){
+    let con = connect();
+    let sql = "SELECT username, password FROM users WHERE username=\"" + username + "\" AND password=\"" + password + "\"";
+    con.query(sql, function (err, result) {
+      try{
+        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
+        console.log(result);
+        con.destroy();
+        if(result.length===1){
+          resolve(true);
+        }
+        else{
+          resolve(false);
+        }
+      }
+      catch(error){
+        console.error(error);
+        console.log("[" + new Date() + "] " + sql + ". FAILED");
+        con.destroy();
+        reject(false);
+      }
+    });
+  });
+  return success;
+}
+
+/**
+* Deletes user from database
+* @param {string} username - the username of the user to delete
+* @return {boolean} true if user has been deleted; false if user has not been deleted.
+*/
 async function deleteUser(username){
   let success = new Promise(function (resolve, reject){
     let con = connect();
     let sql = "DELETE FROM users WHERE username =\"" + username + "\"";
     con.query(sql, function (err, result) {
-      if (err){
-        throw err;
-        con.destroy();
-        reject(false);
-      }
       try{
         console.log("[" + new Date() + "] " + sql + ". SUCCESS");
         con.destroy();
