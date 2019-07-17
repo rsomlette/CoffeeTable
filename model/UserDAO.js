@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const validator = require("email-validator");
+const crypto = require("crypto");
 
 module.exports = {
   validateSignUp,
@@ -10,7 +11,8 @@ module.exports = {
   validateSurname,
   signUp,
   signIn,
-  deleteUser
+  deleteUser,
+  hashString,
 };
 
 function connect(){
@@ -101,10 +103,11 @@ function validateSurname(surname){
 }
 
 async function signUp(username, password, confirmPassword, forename, surname, email){
-  let success = new Promise(function(resolve, reject){
+  let success = new Promise(async function(resolve, reject){
     if(validateSignUp(username, password, confirmPassword, forename, surname, email)){
       let con = connect();
-      let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + password + "','" + email + "','" + forename + "','" + surname + "', 'test')";
+      let hashedPass = await hashString(password)
+      let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + hashedPass + "','" + email + "','" + forename + "','" + surname + "', 'test')";
 
       con.query(sql, function (err, result) {
         try{
@@ -130,9 +133,10 @@ async function signUp(username, password, confirmPassword, forename, surname, em
 }
 
 async function signIn(username, password){
-  let success = new Promise(function (resolve, reject){
+  let success = new Promise(async function (resolve, reject){
     let con = connect();
-    let sql = "SELECT username, password FROM users WHERE username=\"" + username + "\" AND password=\"" + password + "\"";
+    let hashedPass = await hashString(password)
+    let sql = "SELECT username, password FROM users WHERE username=\"" + username + "\" AND password=\"" + hashedPass + "\"";
     con.query(sql, function (err, result) {
       try{
         console.log("[" + new Date() + "] " + sql + ". SUCCESS");
@@ -180,4 +184,15 @@ async function deleteUser(username){
     });
   });
   return success;
+}
+
+/**
+* Hashes a given string using a SHA256
+* @param {string} secret - the string to hash
+* @return {string} The hashed secret, given in hex encoding
+*/
+async function hashString(secret){
+  let hashedSecret = await crypto.createHash("sha256").update(secret).digest("hex");
+  console.log("HASHED " + secret +  " IS: " + hashedSecret);
+  return hashedSecret;
 }
