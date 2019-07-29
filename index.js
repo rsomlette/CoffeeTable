@@ -18,29 +18,43 @@ app.get('/', function(req, res){
 });
 
 app.route('/signup').post( async function(req,res){
-  //TODO ADD HASHING
   let date = new Date();
   let success = await dao.signUp(req.body.username, req.body.password, req.body.confirmPassword, req.body.forename, req.body.surname, req.body.email);
   console.log("Success is: " + success);
+  responseJSON = {
+    "status":100,
+    "message": "",
+  };
   if(success == true){
-    res.send("completed with success!");
+    responseJSON.status = 200;
+    responseJSON.message = "Account Created!\nSigning You In.";
+    res.status(responseJSON.status).json(responseJSON);
   }
   else{
-    res.send("completed with failure!");
+    responseJSON.status = 403;
+    responseJSON.message = "Error Creating Account!\nAccount may already exist or form inputs do not follow the required pattern."
+    res.status(responseJSON.status).json(responseJSON);
   }
 });
 
 app.route('/signin').post(async function(req,res){
-  //TODO ADD HASHING
   let date = new Date();
   console.log("Sign in at " + date);
   let success = await dao.signIn(req.body.username, req.body.password);
   console.log("Success is: " + success);
+  responseJSON = {
+    "status":100,
+    "message": "",
+  };
   if(success == true){
-    res.send('<p>This will sign you in</p>');
+    responseJSON.status = 200;
+    responseJSON.message = "Signing you in!";
+    res.status(responseJSON.status).json(responseJSON);
   }
   else{
-    res.send('<p>Ah rats, an issue!</p>');
+    responseJSON.status = 403;
+    responseJSON.message = "Invalid login credentials";
+    res.status(responseJSON.status).json(responseJSON);
   }
 });
 
@@ -50,10 +64,14 @@ app.route('/delete').get(async function(req,res){
   let success = await dao.deleteUser(req.body.username);
   console.log("Success is: " + success);
   if(success == 1){
-    res.send("deleted with success!");
+    responseJSON.status = 200;
+    responseJSON.message = "User deleted!";
+    res.status(responseJSON.status).json(responseJSON);
   }
   else{
-    res.send("deleted with failure!");
+    responseJSON.status = 400;
+    responseJSON.message = "User not deleted!";
+    res.status(responseJSON.status).json(responseJSON);
   }
 });
 
