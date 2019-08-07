@@ -104,33 +104,47 @@ function validateSurname(surname){
 }
 
 async function signUp(username, password, confirmPassword, forename, surname, email){
-  let success = new Promise(async function(resolve, reject){
-    if(validateSignUp(username, password, confirmPassword, forename, surname, email)){
-      let con = connect();
-      let hashedPass = await hashString(password)
-      let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + hashedPass + "','" + email + "','" + forename + "','" + surname + "', 'test')";
+  const signingUp = new Promise(async function(resolve, reject){
+    try{
+      const userAlreadyExists = await getUsername(username);
+      if(validateSignUp(username, password, confirmPassword, forename, surname, email) && (userAlreadyExists == false)){
+        let con = connect();
+        let hashedPass = await hashString(password)
+        let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + hashedPass + "','" + email + "','" + forename + "','" + surname + "', 'test')";
 
-      con.query(sql, function (err, result) {
-        try{
-          console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-          con.destroy();
-          resolve(true);
-        }
-        catch(error){
-          console.error(error);
-          console.log("[" + new Date() + "] " + sql + ". FAILED");
-          con.destroy();
-          reject(false);
-        }
-      });
+        con.query(sql, function (err, result) {
+          try{
+            console.log("[" + new Date() + "] " + sql + ". SUCCESS");
+            con.destroy();
+            resolve(true);
+          }
+          catch(error){
+            console.error(error);
+            console.log("[" + new Date() + "] " + sql + ". FAILED");
+            con.destroy();
+            reject(false);
+          }
+        });
+      }
+      else{
+        const notValidatedMessage = "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc.";
+        const notValidated = new Error(notValidatedMessage);
+        reject(notValidatedMessage);
+      }
     }
-    else{
-      console.log("Not Validated!");
-      con.destroy();
-      reject(false);
+    catch{
+      reject(false); //Caused unhandled rejection error
     }
   });
-  return success;
+  return signingUp
+    .then((success) => {
+      return success
+    }).catch((error) => {
+      return false;
+      //return false;
+    });
+
+  //return signingUp;
 }
 
 async function signIn(username, password){
@@ -186,7 +200,10 @@ async function deleteUser(username){
   });
   return success;
 }
-
+/**
+* Returns the requested username from the database if it exists
+* @param {string} username - Username to search for
+*/
 async function getUsername(username){
   let success = new Promise(function (resolve, reject){
     let con = connect();
@@ -208,7 +225,12 @@ async function getUsername(username){
   });
   results = await success;
   console.log(results);
-  return results[0].username;
+  if(results.length > 0){
+    return results[0].username;
+  }
+  else{
+    return false;
+  }
 }
 
 /**
