@@ -13,6 +13,7 @@ module.exports = {
   signIn,
   deleteUser,
   hashString,
+  getUsername,
 };
 
 function connect(){
@@ -179,11 +180,35 @@ async function deleteUser(username){
         console.error(error);
         console.log("[" + new Date() + "] " + sql + ". FAILED");
         con.destroy();
-        reject(false);
+        reject(Error("It broke"));
       }
     });
   });
   return success;
+}
+
+async function getUsername(username){
+  let success = new Promise(function (resolve, reject){
+    let con = connect();
+    let sql = "SELECT username FROM users WHERE username=\"" + username + "\"";
+    con.query(sql, function (err, result) {
+      try{
+        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
+        con.destroy();
+        console.log(result);
+        resolve(result);
+      }
+      catch(error){
+        console.error(error);
+        console.log("[" + new Date() + "] " + sql + ". FAILED");
+        con.destroy();
+        reject(new Error("It broke"));
+      }
+    });
+  });
+  results = await success;
+  console.log(results);
+  return results[0].username;
 }
 
 /**
@@ -193,6 +218,5 @@ async function deleteUser(username){
 */
 async function hashString(secret){
   let hashedSecret = await crypto.createHash("sha256").update(secret).digest("hex");
-  console.log("HASHED " + secret +  " IS: " + hashedSecret);
   return hashedSecret;
 }
