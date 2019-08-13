@@ -1,6 +1,34 @@
 const mysql = require('mysql');
 const validator = require("email-validator");
 const crypto = require("crypto");
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+
+passport.use('local-login', new LocalStrategy(
+    function(username, password, done) {
+      let con = connect();
+      let sql = "SELECT * FROM users WHERE username=\"" + username + "\" AND password=\"" + hashString(password) + "\"";
+      con.query(sql, function (err, result) {
+        try{
+          console.log("[" + new Date() + "] " + sql + ". SUCCESS");
+          console.log(result);
+          con.destroy();
+          if(result.length===1){
+            return done(null, user);
+          }
+          else{
+            return done(null, false, { message: 'Incorrect username or password.'});
+          }
+        }
+        catch(error){
+          console.error(error);
+          console.log("[" + new Date() + "] " + sql + ". FAILED");
+          con.destroy();
+          return done(error);
+        }
+      });
+    }
+));
 
 module.exports = {
   validateSignUp,
@@ -148,27 +176,26 @@ async function signUp(username, password, confirmPassword, forename, surname, em
 }
 
 async function signIn(username, password){
-  let success = new Promise(async function (resolve, reject){
+  let success = new Promise(async function(resolve, reject){
     let con = connect();
-    let hashedPass = await hashString(password)
-    let sql = "SELECT username, password FROM users WHERE username=\"" + username + "\" AND password=\"" + hashedPass + "\"";
+    let sql = "SELECT * FROM users WHERE username=\"" + username + "\" AND password=\"" + await hashString(password) + "\"";
     con.query(sql, function (err, result) {
       try{
         console.log("[" + new Date() + "] " + sql + ". SUCCESS");
         console.log(result);
         con.destroy();
         if(result.length===1){
-          resolve(true);
+          resolve(true)
         }
         else{
-          resolve(false);
+          resolve(false)
         }
       }
       catch(error){
         console.error(error);
         console.log("[" + new Date() + "] " + sql + ". FAILED");
         con.destroy();
-        reject(false);
+        reject(false)
       }
     });
   });

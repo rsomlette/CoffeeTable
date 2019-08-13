@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser');
 const express = require('express');
+const passport = require('passport');
 const app = express();
 const port = 8080;
 const dao = require('./model/UserDAO.js');
@@ -19,7 +20,13 @@ app.get('/', function(req, res){
 
 app.route('/signup').post( async function(req,res){
   let date = new Date();
-  let success = await dao.signUp(req.body.username, req.body.password, req.body.confirmPassword, req.body.forename, req.body.surname, req.body.email);
+  let success = null;
+  try{
+    success = await dao.signUp(req.body.username, req.body.password, req.body.confirmPassword, req.body.forename, req.body.surname, req.body.email);
+  }
+  catch{
+    success = false;
+  }
   console.log("Success is: " + success);
   responseJSON = {
     "status":100,
@@ -63,6 +70,10 @@ app.route('/delete').get(async function(req,res){
   let date = new Date();
   let success = await dao.deleteUser(req.body.username);
   console.log("Success is: " + success);
+  responseJSON = {
+    "status":100,
+    "message": "",
+  };
   if(success == 1){
     responseJSON.status = 200;
     responseJSON.message = "User deleted!";
@@ -77,4 +88,18 @@ app.route('/delete').get(async function(req,res){
 
 app.route('/admin').get( (req, res) => {
   res.render('admin');
+});
+
+app.route('/test').get(async (req, res) => {
+  await dao.signUp("test", "Test!123", "Test!123", "test", "von test", "test@test.com");
+  const testMessage = await dao.getUsername("test");
+  responseJSON = {
+    "status":100,
+    "message": "",
+    "testMessage":testMessage,
+  };
+  responseJSON.status = 200;
+  responseJSON.message = "Test page - please ignore!";
+  responseJSON.testMessage = testMessage;
+  res.status(responseJSON.status).json(responseJSON);
 });
