@@ -91,16 +91,15 @@ async function signUp(username, password, confirmPassword, forename, surname, em
   const signingUp = new Promise(async function(resolve, reject){
     try{
       const userAlreadyExists = await getUsername(username);
-      console.log("USER ALREADY EXISTS " + userAlreadyExists);
       if(validateSignUp(username, password, confirmPassword, forename, surname, email) && (userAlreadyExists == false)){
         let hashedPass = await hashString(password)
         MongoClient.connect(dbUrl, function(err, db) {
             if (err) throw err;
-            var dbo = db.db("coffee_table");
-            var newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname };
+            const dbo = db.db("coffee_table");
+            let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname };
             dbo.collection("users").insertOne(newUser, function(err, res) {
               if (err) throw err;
-              console.log("[" + new Date() + "] db.users.insertOne(" + newUsers + "). SUCCESS");
+              console.log("[" + new Date() + "] db.users.insertOne(" + newUser + "). SUCCESS");
               db.close();
             });
         });
@@ -127,27 +126,30 @@ async function signUp(username, password, confirmPassword, forename, surname, em
 
 async function signIn(username, password){
   let success = new Promise(async function(resolve, reject){
-    let con = connect();
-    let sql = "SELECT * FROM users WHERE username=\"" + username + "\" AND password=\"" + await hashString(password) + "\"";
-    con.query(sql, function (err, result) {
-      try{
-        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-        console.log(result);
-        con.destroy();
-        if(result.length===1){
-          resolve(true)
-        }
-        else{
-          resolve(false)
-        }
-      }
-      catch(error){
-        console.error(error);
-        console.log("[" + new Date() + "] " + sql + ". FAILED");
-        con.destroy();
-        reject(false)
-      }
-    });
+    try{
+      MongoClient.connect(dbUrl, async function(err, db){
+        if (err) throw err;
+        let dbo = db.db("coffee_table");
+        let hashedPass = await hashString(password);
+        dbo.collection("users").findOne({username:username, password: hashedPass}, function(err, result){
+          if (err) throw err;
+          console.log("Result is: " + result);
+          if (result !== null){
+            console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). SUCCESS");
+            resolve(true);
+          }
+          else{
+            console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
+            resolve(false);  
+          }
+        });
+      });
+    }
+    catch(err){
+      console.log(err);
+      console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
+      reject(false);
+    }
   });
   return success;
 }
@@ -159,30 +161,37 @@ async function signIn(username, password){
 */
 async function deleteUser(username){
   let success = new Promise(function (resolve, reject){
-    let con = connect();
-    let sql = "DELETE FROM users WHERE username =\"" + username + "\"";
-    con.query(sql, function (err, result) {
-      try{
-        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-        con.destroy();
-        resolve(true);
-      }
-      catch(error){
-        console.error(error);
-        console.log("[" + new Date() + "] " + sql + ". FAILED");
-        con.destroy();
-        reject(Error("It broke"));
-      }
-    });
+    try{
+      MongoClient.connect(dbUrl, function(err, db){
+        if (err) throw err;
+        var dbo = db.db("coffee_table");
+        dbo.collection("users").findOneAndDelete({username: username}, function(error, result){
+          if (err) throw err;
+          if(result !== null){
+            console.log("RESULT IS:" + result)
+            console.log("Removed: " + result.username);
+            resolve(true);
+          }
+          else{
+            console.log("User does not exist");
+            resolve(false);
+          }
+        })
+      });
+    }
+    catch(err){
+      console.log(err);
+      reject(false);
+    }
   });
   return success;
 }
 /**
 * Returns the requested username from the database if it exists
 * @param {string} username - Username to search for
+* @return {string} username if the username exists, false in any other circumstance
 */
 async function getUsername(username){
-  console.log("Searching for " + username);
   let success = new Promise(function (resolve, reject){
     MongoClient.connect(dbUrl, function(err, db) {
       try{
@@ -191,8 +200,7 @@ async function getUsername(username){
         dbo.collection("users").findOne({username: username}, function(err, result){
           if (err) throw err;
           if (result !== null){
-            console.log(result.username);
-            resolve(username);
+            resolve(result.username);
           }
           else{
             resolve(false);
@@ -207,7 +215,6 @@ async function getUsername(username){
     });
   });
   result = await success;
-  console.log(result);
   return success;
 }
 
