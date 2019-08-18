@@ -10,6 +10,7 @@ test('Checks users can be inserted into database', async () => {
 });
 
 test('Checks duplicate users cannot be inserted into the database', async () =>{
-    await dao.signUp("test", "Test!123", "Test!123", "test", "von test", "test1@test.com");
-    expect(await dao.signUp("test", "Test!123", "Test!123", "test", "von test", "test1@test.com")).toBe(false);
+  dao.deleteUser("test");
+  expect(await dao.signUp("test", "Test!123", "Test!123", "test", "von test", "test1@test.com")).toBe(true);
+  expect(await dao.signUp("test", "Test!123", "Test!123", "test", "von test", "test1@test.com")).toBe(false);
 })
