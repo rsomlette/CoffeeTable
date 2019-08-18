@@ -1,34 +1,8 @@
-const mysql = require('mysql');
+const MongoClient = require('mongodb').MongoClient;
+const dbName = require('../config/database').dbName;
+const dbUrl = require('../config/database').dbUrl;
 const validator = require("email-validator");
 const crypto = require("crypto");
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-
-passport.use('local-login', new LocalStrategy(
-    function(username, password, done) {
-      let con = connect();
-      let sql = "SELECT * FROM users WHERE username=\"" + username + "\" AND password=\"" + hashString(password) + "\"";
-      con.query(sql, function (err, result) {
-        try{
-          console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-          console.log(result);
-          con.destroy();
-          if(result.length===1){
-            return done(null, user);
-          }
-          else{
-            return done(null, false, { message: 'Incorrect username or password.'});
-          }
-        }
-        catch(error){
-          console.error(error);
-          console.log("[" + new Date() + "] " + sql + ". FAILED");
-          con.destroy();
-          return done(error);
-        }
-      });
-    }
-));
 
 module.exports = {
   validateSignUp,
@@ -43,26 +17,6 @@ module.exports = {
   hashString,
   getUsername,
 };
-
-function connect(){
-  /**
-  * Manages the connection to the database
-  */
-  let con = mysql.createConnection({
-    //Obviously change these details when deploying!
-    host: "localhost",
-    user: "jringram",
-    password: "coffeetable",
-    database: "coffee_table"
-  });
-
-  con.connect(function(err) {
-    if (err) throw err;
-    else console.log("Connected to coffee_table!");
-  });
-
-  return con;
-}
 
 function validateSignUp(username, password, conf_password, forename, surname, email){
   if (confirmPassword(password, conf_password)){
@@ -136,68 +90,60 @@ async function signUp(username, password, confirmPassword, forename, surname, em
     try{
       const userAlreadyExists = await getUsername(username);
       if(validateSignUp(username, password, confirmPassword, forename, surname, email) && (userAlreadyExists == false)){
-        let con = connect();
         let hashedPass = await hashString(password)
-        let sql = "INSERT INTO users (username, password, email, forename, surname, role) VALUES ('" + username + "','" + hashedPass + "','" + email + "','" + forename + "','" + surname + "', 'test')";
-
-        con.query(sql, function (err, result) {
-          try{
-            console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-            con.destroy();
-            resolve(true);
-          }
-          catch(error){
-            console.error(error);
-            console.log("[" + new Date() + "] " + sql + ". FAILED");
-            con.destroy();
-            reject(false);
-          }
+        MongoClient.connect(dbUrl, function(err, db) {
+            if (err) throw err;
+            const dbo = db.db(dbName);
+            let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname };
+            dbo.collection("users").insertOne(newUser, function(err, res) {
+              if (err) throw err;
+              //console.log("[" + new Date() + "] db.users.insertOne(" + newUser + "). SUCCESS");
+              db.close();
+            });
         });
+        resolve(true);
       }
       else{
-        const notValidatedMessage = "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc.";
-        const notValidated = new Error(notValidatedMessage);
-        reject(notValidatedMessage);
+        //const notValidatedMessage = "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc.";
+        resolve(false);
       }
     }
-    catch{
-      reject(false); //Caused unhandled rejection error
+    catch(error){
+      //console.error(error);
+      //console.log("[" + new Date() + "] db.users.insertOne(" + newUsers + "). FAILED");
+      reject(false);
     }
   });
-  return signingUp
-    .then((success) => {
-      return success
-    }).catch((error) => {
-      return false;
-      //return false;
-    });
-
-  //return signingUp;
+  return await signingUp;
 }
 
 async function signIn(username, password){
   let success = new Promise(async function(resolve, reject){
-    let con = connect();
-    let sql = "SELECT * FROM users WHERE username=\"" + username + "\" AND password=\"" + await hashString(password) + "\"";
-    con.query(sql, function (err, result) {
-      try{
-        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-        console.log(result);
-        con.destroy();
-        if(result.length===1){
-          resolve(true)
-        }
-        else{
-          resolve(false)
-        }
-      }
-      catch(error){
-        console.error(error);
-        console.log("[" + new Date() + "] " + sql + ". FAILED");
-        con.destroy();
-        reject(false)
-      }
-    });
+    try{
+      MongoClient.connect(dbUrl, async function(err, db){
+        if (err) throw err;
+        let dbo = db.db("coffee_table");
+        let hashedPass = await hashString(password);
+        dbo.collection("users").findOne({username:username, password: hashedPass}, function(err, result){
+          if (err) throw err;
+          if (result !== null){
+            //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). SUCCESS");
+            db.close();
+            resolve(true);
+          }
+          else{
+            //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
+            db.close();
+            resolve(false);  
+          }
+        });
+      });
+    }
+    catch(err){
+      //console.log(err);
+      //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
+      reject(false);
+    }
   });
   return success;
 }
@@ -209,55 +155,61 @@ async function signIn(username, password){
 */
 async function deleteUser(username){
   let success = new Promise(function (resolve, reject){
-    let con = connect();
-    let sql = "DELETE FROM users WHERE username =\"" + username + "\"";
-    con.query(sql, function (err, result) {
-      try{
-        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-        con.destroy();
-        resolve(true);
-      }
-      catch(error){
-        console.error(error);
-        console.log("[" + new Date() + "] " + sql + ". FAILED");
-        con.destroy();
-        reject(Error("It broke"));
-      }
-    });
+    try{
+      MongoClient.connect(dbUrl, function(err, db){
+        if (err) throw err;
+        var dbo = db.db("coffee_table");
+        dbo.collection("users").findOneAndDelete({username: username}, function(err, result){
+          if (err) throw err;
+          if(result.value !== null){
+            db.close();
+            resolve(true);
+          }
+          else{
+            //onsole.log("User " + username + " does not exist and cannot be deleted.");
+            db.close();
+            resolve(false);
+          }
+        })
+      });
+    }
+    catch(err){
+      //console.log(err);
+      reject(false);
+    }
   });
   return success;
 }
 /**
 * Returns the requested username from the database if it exists
 * @param {string} username - Username to search for
+* @return {string} username if the username exists, false in any other circumstance
 */
 async function getUsername(username){
-  let success = new Promise(function (resolve, reject){
-    let con = connect();
-    let sql = "SELECT username FROM users WHERE username=\"" + username + "\"";
-    con.query(sql, function (err, result) {
+  return success = new Promise(function (resolve, reject){
+    MongoClient.connect(dbUrl, function(err, db) {
       try{
-        console.log("[" + new Date() + "] " + sql + ". SUCCESS");
-        con.destroy();
-        console.log(result);
-        resolve(result);
+        if (err) throw err;
+        const dbo = db.db("coffee_table");
+        dbo.collection("users").findOne({username: username}, function(err, result){
+          if (err) throw err;
+          if (result !== null){
+            db.close();
+            resolve(result.username);
+          }
+          else{
+            db.close();
+            resolve(false);
+          }
+        });
       }
-      catch(error){
-        console.error(error);
-        console.log("[" + new Date() + "] " + sql + ". FAILED");
-        con.destroy();
-        reject(new Error("It broke"));
+      catch(err){
+        // console.log("Error occurred when checking for username " + username);
+        // console.log(err);
+        reject(false);
       }
     });
   });
-  results = await success;
-  console.log(results);
-  if(results.length > 0){
-    return results[0].username;
-  }
-  else{
-    return false;
-  }
 }
 
 /**

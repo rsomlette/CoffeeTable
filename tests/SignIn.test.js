@@ -1,5 +1,9 @@
 const dao = require('../model/UserDAO.js');
 
+beforeEach(async () => {
+    await dao.deleteUser("test");
+});
+
 test('User can sign in when they enter the correct username and password', async () => {
     await dao.signUp("test", "Test!123", "Test!123", "test", "von test", "test@test.com");
     expect(await dao.signIn('test', 'Test!123')).toBe(true);

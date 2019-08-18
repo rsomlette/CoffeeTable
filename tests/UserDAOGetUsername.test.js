@@ -1,11 +1,15 @@
 const dao = require('../model/UserDAO.js');
 
-beforeEach(async () => {
+beforeAll(async () => {
   await dao.deleteUser("test");
 });
 
+afterEach(async () => {
+  await dao.deleteUser("test");
+})
+
 test('Returns false if no username is retrieved', async () => {
-    expect(await dao.getUsername("test")).toBe(false);
+    expect(await dao.getUsername("userIsNotRegistered")).toBe(false);
 });
 
 
