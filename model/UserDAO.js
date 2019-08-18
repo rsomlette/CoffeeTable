@@ -93,7 +93,7 @@ async function signUp(username, password, confirmPassword, forename, surname, em
         MongoClient.connect(dbUrl, function(err, db) {
             if (err) throw err;
             const dbo = db.db(dbName);
-            let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname };
+            let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname, role: "user" };
             dbo.collection("users").insertOne(newUser, function(err, res) {
               if (err) throw err;
               //console.log("[" + new Date() + "] db.users.insertOne(" + newUser + "). SUCCESS");
@@ -128,12 +128,12 @@ async function signIn(username, password){
           if (result !== null){
             //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). SUCCESS");
             db.close();
-            resolve(true);
+            resolve({status: true, username: result.username, role: result.role});
           }
           else{
             //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
             db.close();
-            resolve(false);  
+            resolve({status: false});  
           }
         });
       });
@@ -141,7 +141,7 @@ async function signIn(username, password){
     catch(err){
       //console.log(err);
       //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
-      reject(false);
+      reject({status: false});
     }
   });
   return success;

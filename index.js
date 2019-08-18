@@ -66,14 +66,9 @@ app.route('/signin').post(async function(req,res){
     session.username = result.username;
     session.role = result.role;
     responseJSON.status = 200;
-    if(!session.views){
-      session.views = 1;
-    }
-    else{
-      session.views++;
-    }
-    responseJSON.message = "Signing you in!\n Welcome " + session.username + ". You are signing in as a " + session.role + " with " + session.views + " views!";
-    res.status(responseJSON.status).json(responseJSON);
+    responseJSON.message = "Signing you in!\n Welcome " + session.username + ". You are signing in as a " + session.role;
+    res.redirect('/admin');
+    //res.status(responseJSON.status).json(responseJSON);
   }
   else{
     responseJSON.status = 403;
@@ -104,8 +99,17 @@ app.route('/delete').get(async function(req,res){
 });
 
 app.route('/admin').get( (req, res) => {
-  res.render('admin');
+  if(req.session.role == 'admin'){
+    res.render('admin')
+  }
+  else{
+    res.redirect('/403')
+  }
 });
+
+app.route('/403').get((req, res) => {
+  res.render('403');
+})
 
 app.route('/test').get(async (req, res) => {
   if (req.session.views) {
