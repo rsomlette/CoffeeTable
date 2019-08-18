@@ -2,7 +2,7 @@ const MongoClient = require('mongodb').MongoClient;
 const dbName = require('../config/database').dbName;
 const dbUrl = require('../config/database').dbUrl;
 const validator = require("email-validator");
-const crypto = require("crypto");
+const hashString = require("../utils/hashString").hashString;
 
 module.exports = {
   validateSignUp,
@@ -14,7 +14,6 @@ module.exports = {
   signUp,
   signIn,
   deleteUser,
-  hashString,
   getUsername,
 };
 
@@ -210,14 +209,4 @@ async function getUsername(username){
       }
     });
   });
-}
-
-/**
-* Hashes a given string using a SHA256
-* @param {string} secret - the string to hash
-* @return {string} The hashed secret, given in hex encoding
-*/
-async function hashString(secret){
-  let hashedSecret = await crypto.createHash("sha256").update(secret).digest("hex");
-  return hashedSecret;
 }
