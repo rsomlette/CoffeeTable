@@ -1,5 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
-const dbUrl = 'mongodb://localhost:27017/coffee_table';
+const dbName = require('./config/database').dbName;
+const dbUrl = require('./config/database').dbUrl;
 
 function createDB(){
     /**
@@ -8,15 +9,16 @@ function createDB(){
    MongoClient.connect(dbUrl, function(err, db) {
     try{
         if (err) throw err;
-        var dbo = db.db("coffee_table");
+        var dbo = db.db(dbName);
         dbo.createCollection("users", function(err, res) {
             console.log("`coffee_table` database created!");
             console.log("`users` collection created!");
         db.close();
         });
     }
-    catch{
-
+    catch(err){
+        console.log("An eror occurred when creating the database");
+        console.log(err);
     }
   }); 
 }

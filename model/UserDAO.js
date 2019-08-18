@@ -1,8 +1,6 @@
-const mysql = require('mysql');
-const mongo = require('mongodb'); 
 const MongoClient = require('mongodb').MongoClient;
-const dbUrl = 'mongodb://localhost:27017/coffee_table';
-const db = "coffee_table"
+const dbName = require('../config/database').dbName;
+const dbUrl = require('../config/database').dbUrl;
 const validator = require("email-validator");
 const crypto = require("crypto");
 
@@ -95,7 +93,7 @@ async function signUp(username, password, confirmPassword, forename, surname, em
         let hashedPass = await hashString(password)
         MongoClient.connect(dbUrl, function(err, db) {
             if (err) throw err;
-            const dbo = db.db("coffee_table");
+            const dbo = db.db(dbName);
             let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname };
             dbo.collection("users").insertOne(newUser, function(err, res) {
               if (err) throw err;
