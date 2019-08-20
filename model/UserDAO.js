@@ -2,7 +2,7 @@ const MongoClient = require('mongodb').MongoClient;
 const dbName = require('../config/database').dbName;
 const dbUrl = require('../config/database').dbUrl;
 const validator = require("email-validator");
-const crypto = require("crypto");
+const hashString = require("../utils/hashString").hashString;
 
 module.exports = {
   validateSignUp,
@@ -14,7 +14,6 @@ module.exports = {
   signUp,
   signIn,
   deleteUser,
-  hashString,
   getUsername,
 };
 
@@ -94,24 +93,23 @@ async function signUp(username, password, confirmPassword, forename, surname, em
         MongoClient.connect(dbUrl, function(err, db) {
             if (err) throw err;
             const dbo = db.db(dbName);
-            let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname };
+            let newUser = { username: username, password: hashedPass, email: email, forename: forename, surname: surname, role: "user" };
             dbo.collection("users").insertOne(newUser, function(err, res) {
               if (err) throw err;
               //console.log("[" + new Date() + "] db.users.insertOne(" + newUser + "). SUCCESS");
               db.close();
             });
         });
-        resolve(true);
+        resolve({status: true, message: "User successfully entered into database"});
       }
       else{
-        //const notValidatedMessage = "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc.";
-        resolve(false);
+        resolve({status: false, message: "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc"});
       }
     }
     catch(error){
       //console.error(error);
-      //console.log("[" + new Date() + "] db.users.insertOne(" + newUsers + "). FAILED");
-      reject(false);
+      console.log("[" + new Date() + "] db.users.insertOne(" + newUsers + "). FAILED");
+      reject({status: false, message:"An unxpected error occurred!"});
     }
   });
   return await signingUp;
@@ -129,12 +127,12 @@ async function signIn(username, password){
           if (result !== null){
             //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). SUCCESS");
             db.close();
-            resolve(true);
+            resolve({status: true, username: result.username, role: result.role});
           }
           else{
             //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
             db.close();
-            resolve(false);  
+            resolve({status: false});  
           }
         });
       });
@@ -142,7 +140,7 @@ async function signIn(username, password){
     catch(err){
       //console.log(err);
       //console.log("[" + new Date() + "] db.users.findOne({username: " + username + ", password: " + password + "}). FAILED");
-      reject(false);
+      reject({status: false});
     }
   });
   return success;
@@ -166,7 +164,7 @@ async function deleteUser(username){
             resolve(true);
           }
           else{
-            //onsole.log("User " + username + " does not exist and cannot be deleted.");
+            console.log(result.value);
             db.close();
             resolve(false);
           }
@@ -210,14 +208,4 @@ async function getUsername(username){
       }
     });
   });
-}
-
-/**
-* Hashes a given string using a SHA256
-* @param {string} secret - the string to hash
-* @return {string} The hashed secret, given in hex encoding
-*/
-async function hashString(secret){
-  let hashedSecret = await crypto.createHash("sha256").update(secret).digest("hex");
-  return hashedSecret;
 }
