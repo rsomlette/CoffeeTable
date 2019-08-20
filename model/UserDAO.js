@@ -100,17 +100,16 @@ async function signUp(username, password, confirmPassword, forename, surname, em
               db.close();
             });
         });
-        resolve(true);
+        resolve({status: true, message: "User successfully entered into database"});
       }
       else{
-        //const notValidatedMessage = "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc.";
-        resolve(false);
+        resolve({status: false, message: "Not validated. Password may not be sufficiently complex, email may be invalid, username may already exist, etc"});
       }
     }
     catch(error){
       //console.error(error);
-      //console.log("[" + new Date() + "] db.users.insertOne(" + newUsers + "). FAILED");
-      reject(false);
+      console.log("[" + new Date() + "] db.users.insertOne(" + newUsers + "). FAILED");
+      reject({status: false, message:"An unxpected error occurred!"});
     }
   });
   return await signingUp;
@@ -165,7 +164,7 @@ async function deleteUser(username){
             resolve(true);
           }
           else{
-            //onsole.log("User " + username + " does not exist and cannot be deleted.");
+            console.log(result.value);
             db.close();
             resolve(false);
           }

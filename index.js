@@ -20,7 +20,6 @@ app.listen(port, function(){
 
 app.get('/', function(req, res){
   session = req.session;
-  console.log(session.username);
   session.role;
   res.render('index')
 });
@@ -34,12 +33,11 @@ app.route('/signup').post( async function(req,res){
   catch{
     success = false;
   }
-  console.log("Success is: " + success);
   responseJSON = {
     "status":100,
     "message": "",
   };
-  if(success == true){
+  if(success.status == true){
     responseJSON.status = 200;
     responseJSON.message = "Account Created!\nSigning You In.";
     res.status(responseJSON.status).json(responseJSON);
@@ -53,10 +51,7 @@ app.route('/signup').post( async function(req,res){
 
 app.route('/signin').post(async function(req,res){
   let date = new Date();
-  console.log("Sign in at " + date);
   let result = await dao.signIn(req.body.username, req.body.password);
-  console.log("Success is: " + result.status);
-  console.log("result is " + JSON.stringify(result));
   responseJSON = {
     "status":100,
     "message": "",
@@ -81,7 +76,6 @@ app.route('/delete').get(async function(req,res){
   //Currently only used for testing!
   let date = new Date();
   let success = await dao.deleteUser(req.body.username);
-  console.log("Success is: " + success);
   responseJSON = {
     "status":100,
     "message": "",
