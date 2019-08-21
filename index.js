@@ -101,19 +101,18 @@ app.route('/admin').get( (req, res) => {
   }
 });
 
+app.route('/write').get((req, res) => {
+  res.render('write');
+})
+
 app.route('/403').get((req, res) => {
   res.render('403');
 })
 
+app.route('/submitPost').post((req, res) => {
+  res.send(req.body.test1 + "\n" + req.body.test2);
+})
+
 app.route('/test').get(async (req, res) => {
-  if (req.session.views) {
-    req.session.views++
-    res.setHeader('Content-Type', 'text/html')
-    res.write('<p>views: ' + req.session.views + '</p>')
-    res.write('<p>expires in: ' + (req.session.cookie.maxAge / 1000) + 's</p>')
-    res.end()
-  } else {
-    req.session.views = 1
-    res.end('welcome to the session demo. refresh!')
-  }
+  res.sendFile('views/write.html' , { root : __dirname});
 });

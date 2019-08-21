@@ -1,0 +1,21 @@
+html
+  head
+    title!='Coffee Table | CMS'
+    link(rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css")
+    style(type='text/css').
+        div#editor {
+            width: 50%;
+            height: 50%;
+            display: block;
+        },
+    script(src="https://unpkg.com/easymde/dist/easymde.min.js")
+  body
+    h1='Coffee Table | Write Article'
+    p Perhaps some text here to state where a submission was successful or not.
+    form(action="submitPost" method="post")
+        input(type="text" name="test1")
+        input(type="submit" value="Submit")
+        div(id="editor")
+            textarea(name="test2")
+            script.
+                var easyMDE = new EasyMDE({minHeight: "500px",});
