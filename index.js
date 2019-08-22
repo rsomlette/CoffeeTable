@@ -3,7 +3,8 @@ const express = require('express');
 const exsession = require('express-session');
 const app = express();
 const port = 8080;
-const dao = require('./model/UserDAO.js');
+const userDao = require('./model/UserDAO.js');
+const articleDao = require('./model/ArticleDAO.js');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -28,7 +29,7 @@ app.route('/signup').post( async function(req,res){
   let date = new Date();
   let success = null;
   try{
-    success = await dao.signUp(req.body.username, req.body.password, req.body.confirmPassword, req.body.forename, req.body.surname, req.body.email);
+    success = await userDao.signUp(req.body.username, req.body.password, req.body.confirmPassword, req.body.forename, req.body.surname, req.body.email);
   }
   catch{
     success = false;
@@ -51,7 +52,7 @@ app.route('/signup').post( async function(req,res){
 
 app.route('/signin').post(async function(req,res){
   let date = new Date();
-  let result = await dao.signIn(req.body.username, req.body.password);
+  let result = await userDao.signIn(req.body.username, req.body.password);
   responseJSON = {
     "status":100,
     "message": "",
@@ -75,7 +76,7 @@ app.route('/signin').post(async function(req,res){
 app.route('/delete').get(async function(req,res){
   //Currently only used for testing!
   let date = new Date();
-  let success = await dao.deleteUser(req.body.username);
+  let success = await userDao.deleteUser(req.body.username);
   responseJSON = {
     "status":100,
     "message": "",
@@ -109,8 +110,9 @@ app.route('/403').get((req, res) => {
   res.render('403');
 })
 
-app.route('/submitPost').post((req, res) => {
-  res.send(req.body.test1 + "\n" + req.body.test2);
+app.route('/submitPost').post(async (req, res) => {
+  let success = await articleDao.saveArticle(req.body.title, req.body.markdown);
+  res.send('<h1>' + req.body.title + '</h1>' + '<p>'  + req.body.markdown + '</p>');
 })
 
 app.route('/test').get(async (req, res) => {

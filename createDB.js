@@ -13,7 +13,11 @@ function createDB(){
         dbo.createCollection("users", function(err, res) {
             console.log("`coffee_table` database created!");
             console.log("`users` collection created!");
-        db.close();
+            db.close();
+        });
+        dbo.createCollection("articles", function(err, res) {
+            console.log("`articles` collection created!");
+            db.close();
         });
     }
     catch(err){
