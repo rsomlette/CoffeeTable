@@ -1,4 +1,4 @@
-# Foobar
+# CoffeeTable
 
 CoffeeTable is a lightweight content management system written in `node.js` and utilises `MongoDB` as a database. The focus of CoffeeTable is to provide a simple engine to write and host blogs. The functionality of CoffeeTable is to be simple. The UI will be simplistic, and Markdown will be written to write blogs with a WYSIWYG editor on site. 
 
