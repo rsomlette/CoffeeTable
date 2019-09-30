@@ -12,8 +12,9 @@ async function saveArticle(title, markdown){
             MongoClient.connect(dbUrl, (err, db) => {
                 if(err) throw err;
                 const dbo = db.db(dbName);
-                const article = {title: title, content: markdown};
-                dbo.collection("articles").insert(article, () =>{
+                const date = new Date();
+                const article = {title: title, content: markdown, date: {day: date.getDay(), month: date.getMonth()}, status: "unpublished"};
+                dbo.collection("articles").insertOne(article, () =>{
                     if (err) throw err;
                     db.close();
                 })

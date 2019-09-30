@@ -5,6 +5,7 @@ const app = express();
 const port = 8080;
 const userDao = require('./model/UserDAO.js');
 const articleDao = require('./model/ArticleDAO.js');
+const md = require('markdown-it')();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -112,7 +113,8 @@ app.route('/403').get((req, res) => {
 
 app.route('/submitPost').post(async (req, res) => {
   let success = await articleDao.saveArticle(req.body.title, req.body.markdown);
-  res.send('<h1>' + req.body.title + '</h1>' + '<p>'  + req.body.markdown + '</p>');
+  let result = await md.render(req.body.markdown);
+  res.send("<h1>" + req.body.title + "</h1>"  + md.render(req.body.markdown));
 })
 
 app.route('/test').get(async (req, res) => {
