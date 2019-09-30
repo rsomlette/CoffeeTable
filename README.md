@@ -15,9 +15,9 @@ CoffeeTable is currently still being built and is not in a usable state.
     * Change `dbUrl` to the appropriate URL.
 * Move to the `CoffeeTable` directory on your local machine.
 * Run `npm i`
-* Run `createDB.js`:
+* Run `setup.js`:
     * Move to project root directory in terminal
-    * Run `createDB.js`
+    * Run `setup.js`
 
 ## Usage
 Start MongoDB from terminal:
