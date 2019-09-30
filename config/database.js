@@ -1,6 +1,8 @@
-let dbName = 'coffee_table';
+let dbName = 'coffee_table'; 
 module.exports = {
     //Change as appropriate
-    dbName: dbName,
-    dbUrl: 'mongodb://localhost:27017/' + dbName,
+    //The name of the database
+    dbName: dbName, 
+    //The URL of the database
+    dbUrl: 'mongodb://localhost:27017/' + dbName, 
 };
