@@ -12,7 +12,7 @@ app.use(exsession({
 
 }));
 
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
 app.listen(port, function(){
   console.log("App listening on " + port);
