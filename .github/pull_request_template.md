@@ -34,6 +34,9 @@
 - [ ] I have linked to the appropriate issue on GitHub
 - [ ] I have written an appropriate description for this PR.
 - [ ] I have written how to test this PR.
+- [ ] I have updated the documentation
+- [ ] I commented my code.
+- [ ] I updated the changelog
 
 ### Checklist for reviewers
 - [ ] I have reviewed the new code
